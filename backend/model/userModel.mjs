@@ -52,10 +52,16 @@ userSchema.pre('save',function(next){
 //         console.log("error in logging in")
 //     }
 // });
-userSchema.static('verifyPassword',
-async function(password) {
-    return await bcrypt.compare(password, this.password);
-})
+userSchema.methods.verifyPassword = function(password) {
+
+  const userPassword=this.password;
+  const salt=this.salt;
+ const hashedPassword=createHmac("sha256",salt).update(password).digest("hex");
+ if(userPassword!==hashedPassword){
+    return false;
+ }
+  return true;
+};
 
 const User=model('userData',userSchema);
 export default User;

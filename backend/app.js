@@ -6,6 +6,7 @@ import storeDB from './store/mongoStore.mjs';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import './pass/pass.mjs';
+import './pass/google.mjs';
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -22,7 +23,7 @@ app.use(session({
     saveUninitialized:false,
     store:store,
     cookie:{
-        maxAge:24*60*60*100
+        maxAge:24*60*60*1000
     },
     name:"cook",
 }));
@@ -34,21 +35,25 @@ connect(process.env.MONGOURL).then(()=>{
 
 app.use('/',userRoute);
 app.get('/him',(req,res)=>{
-    if(req.session&&req.session.user){
-        res.send(req.session.user);
+    if(req.session){
+        res.send(req.user);
         
     }
     else{
         res.send("no user")
     }
 })
+app.get('/gog',(req, res) =>{
+    res.send(`<a href='/auth/google'>google</a>`)
+})
 app.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile'] }));
+  passport.authenticate('google'));
+
 app.get('/auth/callback', 
-  passport.authenticate('google', { failureRedirect: '/log' }),
+  passport.authenticate('google', { failureRedirect: '/login' }),
   function(req, res) {
     // Successful authentication, redirect home.
-    res.redirect('/');
+    res.redirect('/him');
   });
 app.delete('/logout', (req, res) => {
     req.session.destroy((err) => {
